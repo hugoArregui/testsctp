@@ -27,8 +27,6 @@ var (
 func PrintStatistics(association *sctp.Association) {
 	since := time.Now()
 	for range time.NewTicker(1000 * time.Millisecond).C {
-		rbps := float64(association.BytesReceived()*8) / time.Since(since).Seconds()
-		log.Printf("Received Mbps: %.03f, totalBytesReceived: %d", rbps/1024/1024, association.BytesReceived())
 		sbps := float64(association.BytesSent()*8) / time.Since(since).Seconds()
 		log.Printf("Sent Mbps: %.03f, totalBytesSent: %d", sbps/1024/1024, association.BytesSent())
 	}
@@ -76,7 +74,7 @@ var clientCmd = &cobra.Command{
 func init() {
 	rootCmd.AddCommand(clientCmd)
 	clientCmd.Flags().StringVarP(&server, "server", "s", "", "address of server, host:port")
-	clientCmd.Flags().StringVarP(&flowcontrol, "flowcontrol", "f", "signal", "flow control strategy")
+	clientCmd.Flags().StringVarP(&flowcontrol, "flowcontrol", "f", "drain", "flow control strategy")
 	clientCmd.Flags().Uint64VarP(&queueSize, "queue-size", "q", 100, "queue size for drain flow control strategy")
 	clientCmd.Flags().Uint64VarP(&bufferLowThreshold, "buffer-low-threshold", "l", 512*1024, "buffer low threshold")
 	clientCmd.Flags().Uint64VarP(&maxBufferAmount, "max-buffer-amount", "m", 1024*1024, "max buffer amount")

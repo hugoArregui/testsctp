@@ -5,10 +5,16 @@ import (
 	"github.com/pion/sctp"
 	"github.com/spf13/cobra"
 	"io"
-	"io/ioutil"
 	"log"
 	"net"
+	"time"
 )
+
+type NoopWriter struct{}
+
+func (w *NoopWriter) Write(p []byte) (int, error) {
+	return len(p), nil
+}
 
 // serverCmd represents the server command
 var serverCmd = &cobra.Command{
@@ -34,17 +40,27 @@ var serverCmd = &cobra.Command{
 		if err != nil {
 			panic(err)
 		}
+
+		go func() {
+			since := time.Now()
+			for range time.NewTicker(1000 * time.Millisecond).C {
+				rbps := float64(s.BytesReceived()*8) / time.Since(since).Seconds()
+				log.Printf("Received Mbps: %.03f, totalBytesReceived: %d", rbps/1024/1024, s.BytesReceived())
+			}
+		}()
+
 		for {
 			stream, err := s.AcceptStream()
 			if err != nil {
 				panic(err)
 			}
 			go func() {
+				w := &NoopWriter{}
+				n, err := io.Copy(w, stream)
+				log.Println(err, n)
 				if err != nil {
 					panic(err)
 				}
-				n, err := io.Copy(ioutil.Discard, stream)
-				log.Println(err, n)
 			}()
 		}
 	},

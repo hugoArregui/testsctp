@@ -7,5 +7,5 @@ package main
 import "github.com/AeroNotix/testsctp/cmd"
 
 func main() {
-  cmd.Execute()
+	cmd.Execute()
 }
