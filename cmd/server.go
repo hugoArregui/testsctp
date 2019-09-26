@@ -4,17 +4,10 @@ import (
 	"github.com/pion/logging"
 	"github.com/pion/sctp"
 	"github.com/spf13/cobra"
-	"io"
 	"log"
 	"net"
 	"time"
 )
-
-type NoopWriter struct{}
-
-func (w *NoopWriter) Write(p []byte) (int, error) {
-	return len(p), nil
-}
 
 // serverCmd represents the server command
 var serverCmd = &cobra.Command{
@@ -54,12 +47,15 @@ var serverCmd = &cobra.Command{
 			if err != nil {
 				panic(err)
 			}
+
+			// stream.SetReliabilityParams(true, 0, 100)
 			go func() {
-				w := &NoopWriter{}
-				n, err := io.Copy(w, stream)
-				log.Println(err, n)
-				if err != nil {
-					panic(err)
+				buf := make([]byte, 1024 * 1024)
+				for {
+					_, err := stream.Read(buf)
+					if err != nil {
+						panic(err)
+					}
 				}
 			}()
 		}

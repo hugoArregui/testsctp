@@ -8,7 +8,6 @@ import (
 
 type FlowControlledStream struct {
 	stream                     *sctp.Stream
-	bufferedAmountLowThreshold uint64
 	maxBufferedAmount          uint64
 }
 
@@ -33,7 +32,6 @@ func NewFlowControlledStream(flowControlType string, stream *sctp.Stream, buffer
 	stream.SetBufferedAmountLowThreshold(bufferedAmountLowThreshold)
 	fcs := FlowControlledStream{
 		stream:                     stream,
-		bufferedAmountLowThreshold: bufferedAmountLowThreshold,
 		maxBufferedAmount:          maxBufferedAmount,
 	}
 

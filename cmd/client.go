@@ -24,14 +24,6 @@ var (
 	maxBufferAmount    uint64
 )
 
-func PrintStatistics(association *sctp.Association) {
-	since := time.Now()
-	for range time.NewTicker(1000 * time.Millisecond).C {
-		sbps := float64(association.BytesSent()*8) / time.Since(since).Seconds()
-		log.Printf("Sent Mbps: %.03f, totalBytesSent: %d", sbps/1024/1024, association.BytesSent())
-	}
-}
-
 // clientCmd represents the client command
 var clientCmd = &cobra.Command{
 	Use: "client",
@@ -57,12 +49,25 @@ var clientCmd = &cobra.Command{
 		if err != nil {
 			panic(err)
 		}
-		go PrintStatistics(sctpClient)
+
 		stream, err := sctpClient.OpenStream(uint16(22), sctp.PayloadTypeWebRTCBinary)
 		if err != nil {
 			panic(err)
 		}
+		// stream.SetReliabilityParams(true, 0, 100)
 		log.Println("Opened stream")
+
+		go func () {
+			since := time.Now()
+			for range time.NewTicker(1000 * time.Millisecond).C {
+				sbps := float64(sctpClient.BytesSent()*8) / time.Since(since).Seconds()
+				log.Printf("Sent Mbps: %.03f, totalBytesSent: %d, bufferedAmout: %d",
+					sbps/1024/1024,
+					sctpClient.BytesSent(),
+					stream.BufferedAmount())
+			}
+		}()
+
 		src := rand.NewSource(int64(123))
 		r := rand.New(src)
 		fc := pkg.NewFlowControlledStream(flowcontrol, stream, bufferLowThreshold, maxBufferAmount, queueSize)
