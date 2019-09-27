@@ -10,3 +10,5 @@ require (
 	github.com/spf13/cobra v0.0.5
 	github.com/spf13/viper v1.3.2
 )
+
+replace github.com/pion/sctp => /home/hugo/fuentes/pion/sctp

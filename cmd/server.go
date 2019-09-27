@@ -3,6 +3,7 @@ package cmd
 import (
 	"github.com/pion/logging"
 	"github.com/pion/sctp"
+	"fmt"
 	"github.com/spf13/cobra"
 	"log"
 	"net"
@@ -38,7 +39,8 @@ var serverCmd = &cobra.Command{
 			since := time.Now()
 			for range time.NewTicker(1000 * time.Millisecond).C {
 				rbps := float64(s.BytesReceived()*8) / time.Since(since).Seconds()
-				log.Printf("Received Mbps: %.03f, totalBytesReceived: %d", rbps/1024/1024, s.BytesReceived())
+				log.Printf("Received Mbps: %.03f, totalBytesReceived: %d", rbps/1024/1024,
+					s.BytesReceived())
 			}
 		}()
 
@@ -48,12 +50,13 @@ var serverCmd = &cobra.Command{
 				panic(err)
 			}
 
-			// stream.SetReliabilityParams(true, 0, 100)
+			stream.SetReliabilityParams(false, 2, 10)
 			go func() {
-				buf := make([]byte, 1024 * 1024)
+				buf := make([]byte, 1024*1024*1024)
 				for {
 					_, err := stream.Read(buf)
 					if err != nil {
+						fmt.Println("ERRROR")
 						panic(err)
 					}
 				}

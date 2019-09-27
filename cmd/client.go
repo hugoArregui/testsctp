@@ -28,11 +28,11 @@ var (
 var clientCmd = &cobra.Command{
 	Use: "client",
 	Run: func(cmd *cobra.Command, args []string) {
-		raddr, err := net.ResolveUDPAddr("udp", "127.0.0.1:10001")
+		raddr, err := net.ResolveUDPAddr("udp4", "127.0.0.1:10001")
 		if err != nil {
 			panic(err)
 		}
-		laddr, err := net.ResolveUDPAddr("udp", "127.0.0.1:10002")
+		laddr, err := net.ResolveUDPAddr("udp4", "127.0.0.1:10002")
 		if err != nil {
 			panic(err)
 		}
@@ -54,10 +54,10 @@ var clientCmd = &cobra.Command{
 		if err != nil {
 			panic(err)
 		}
-		// stream.SetReliabilityParams(true, 0, 100)
+		stream.SetReliabilityParams(false, 2, 10)
 		log.Println("Opened stream")
 
-		go func () {
+		go func() {
 			since := time.Now()
 			for range time.NewTicker(1000 * time.Millisecond).C {
 				sbps := float64(sctpClient.BytesSent()*8) / time.Since(since).Seconds()
@@ -70,7 +70,7 @@ var clientCmd = &cobra.Command{
 
 		src := rand.NewSource(int64(123))
 		r := rand.New(src)
-		fc := pkg.NewFlowControlledStream(flowcontrol, stream, bufferLowThreshold, maxBufferAmount, queueSize)
+		fc := pkg.NewFlowControlledStream(stream, bufferLowThreshold, maxBufferAmount, 100)
 		_, err = io.Copy(fc, r)
 		panic(err)
 	},
